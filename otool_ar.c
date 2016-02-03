@@ -6,7 +6,7 @@
 /*   By: vwatrelo <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/02/03 18:42:01 by vwatrelo          #+#    #+#             */
-/*   Updated: 2016/02/03 18:42:06 by vwatrelo         ###   ########.fr       */
+/*   Updated: 2016/02/03 19:15:21 by vwatrelo         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ static int			get_size(char *str)
 	return (ft_atoi(str_part));
 }
 
-static void			print_ar(uint32_t off, t_file_info *file_info)
+static char			*print_ar(uint32_t off, t_file_info *file_info,
+							char *prec_name)
 {
 	int				size;
 	char			*name;
@@ -29,20 +30,25 @@ static void			print_ar(uint32_t off, t_file_info *file_info)
 
 	ar = file_info->data + off;
 	name = ft_strstr(ar->ar_name, ARFMAG) + ft_strlen(ARFMAG);
+	if (!ft_strcmp(name, prec_name))
+		return (name);
 	size = get_size(ar->ar_name);
 	ft_printf("%s(%s):\n", file_info->name, name);
 	ft_memcpy(&sub_file_info, file_info, sizeof(t_file_info));
 	sub_file_info.data = (void *)ar + sizeof(*ar) + size;
 	otool(&sub_file_info, FALSE);
+	return (name);
 }
 
 static void			browse_lst(t_list *list, t_file_info *file_info)
 {
 	t_list		*next;
+	char		*name;
 
+	name = "";
 	while (list != NULL)
 	{
-		print_ar(*((uint32_t *)list->content), file_info);
+		name = print_ar(*((uint32_t *)list->content), file_info, name);
 		next = list->next;
 		free(list->content);
 		free(list);
